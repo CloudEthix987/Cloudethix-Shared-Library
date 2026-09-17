@@ -15,10 +15,10 @@ def call(body) {
             registryURL = 'https://registry.hub.docker.com'
 
             // Docker Hub repositories
-            dev_registry   = 'payalkharat/cloudethix-sample-nginx-dev'
-            qa_registry    = 'payalkharat/cloudethix-sample-nginx-qa'
-            stage_registry = 'payalkharat/cloudethix-sample-nginx-stage'
-            prod_registry  = 'payalkharat/cloudethix-sample-nginx-prod'
+           dev_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-dev' 
+           qa_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-qa' 
+           stage_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-stage' 
+           prod_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-prod'
 
             // Jenkins credentials
             dev_dh_creds   = 'dh_cred_dev'

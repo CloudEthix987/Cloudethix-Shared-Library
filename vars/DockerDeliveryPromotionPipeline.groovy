@@ -11,13 +11,16 @@ def call(body) {
 
         environment {
 
-            registryURL = 'https://registry.hub.docker.com/'
+            // Docker Hub registry
+            registryURL = 'https://registry.hub.docker.com'
 
+            // Docker Hub repositories
             dev_registry   = 'payalkharat/cloudethix-sample-nginx-dev'
             qa_registry    = 'payalkharat/cloudethix-sample-nginx-qa'
             stage_registry = 'payalkharat/cloudethix-sample-nginx-stage'
             prod_registry  = 'payalkharat/cloudethix-sample-nginx-prod'
 
+            // Jenkins credentials
             dev_dh_creds   = 'dh_cred_dev'
             qa_dh_creds    = 'dh_cred_qa'
             stage_dh_creds = 'dh_cred_stage'
@@ -35,6 +38,13 @@ def call(body) {
 
         stages {
 
+            /*
+             * ============================================================
+             * DEV
+             * Build image and push it to DEV repository
+             * ============================================================
+             */
+
             stage('Building the Docker Image in Dev') {
 
                 when {
@@ -45,9 +55,6 @@ def call(body) {
 
                 environment {
 
-                    dev_registry_endpoint =
-                        "${env.registryURL}${env.dev_registry}"
-
                     dev_image =
                         "${env.dev_registry}:${GIT_COMMIT}"
                 }
@@ -57,14 +64,16 @@ def call(body) {
                     script {
 
                         docker.withRegistry(
-                            dev_registry_endpoint,
-                            dev_dh_creds
+                            env.registryURL,
+                            env.dev_dh_creds
                         ) {
 
-                            docker.build(
-                                "${env.dev_image}",
+                            def image = docker.build(
+                                env.dev_image,
                                 '.'
-                            ).push()
+                            )
+
+                            image.push()
                         }
                     }
                 }
@@ -81,6 +90,15 @@ def call(body) {
             }
 
 
+            /*
+             * ============================================================
+             * QA
+             * Pull DEV image
+             * Tag it as QA
+             * Push QA image
+             * ============================================================
+             */
+
             stage('Push the Docker Image in QA') {
 
                 when {
@@ -90,12 +108,6 @@ def call(body) {
                 }
 
                 environment {
-
-                    dev_registry_endpoint =
-                        "${env.registryURL}${env.dev_registry}"
-
-                    qa_registry_endpoint =
-                        "${env.registryURL}${env.qa_registry}"
 
                     dev_image =
                         "${env.dev_registry}:${GIT_COMMIT}"
@@ -108,32 +120,49 @@ def call(body) {
 
                     script {
 
-                        // Login to DEV registry and pull image
+                        /*
+                         * Login to Docker Hub using DEV credentials
+                         * and pull DEV image
+                         */
+
                         docker.withRegistry(
-                            dev_registry_endpoint,
-                            dev_dh_creds
+                            env.registryURL,
+                            env.dev_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.dev_image}"
+                                env.dev_image
                             ).pull()
                         }
 
-                        // Tag DEV image as QA image
+
+                        /*
+                         * Tag DEV image as QA image
+                         *
+                         * IMPORTANT:
+                         * Both image names are exactly the same
+                         * format used during pull.
+                         */
+
                         sh """
                             docker tag \
                             ${env.dev_image} \
                             ${env.qa_image}
                         """
 
-                        // Login to QA registry and push image
+
+                        /*
+                         * Login to Docker Hub using QA credentials
+                         * and push QA image
+                         */
+
                         docker.withRegistry(
-                            qa_registry_endpoint,
-                            qa_dh_creds
+                            env.registryURL,
+                            env.qa_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.qa_image}"
+                                env.qa_image
                             ).push()
                         }
                     }
@@ -152,6 +181,15 @@ def call(body) {
             }
 
 
+            /*
+             * ============================================================
+             * STAGE
+             * Pull QA image
+             * Tag it as STAGE
+             * Push STAGE image
+             * ============================================================
+             */
+
             stage('Push the Docker Image in STAGE') {
 
                 when {
@@ -161,12 +199,6 @@ def call(body) {
                 }
 
                 environment {
-
-                    qa_registry_endpoint =
-                        "${env.registryURL}${env.qa_registry}"
-
-                    stage_registry_endpoint =
-                        "${env.registryURL}${env.stage_registry}"
 
                     qa_image =
                         "${env.qa_registry}:${GIT_COMMIT}"
@@ -179,32 +211,45 @@ def call(body) {
 
                     script {
 
-                        // Pull image from QA
+                        /*
+                         * Login using QA credentials
+                         * and pull QA image
+                         */
+
                         docker.withRegistry(
-                            qa_registry_endpoint,
-                            qa_dh_creds
+                            env.registryURL,
+                            env.qa_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.qa_image}"
+                                env.qa_image
                             ).pull()
                         }
 
-                        // Tag QA image as STAGE
+
+                        /*
+                         * Tag QA image as STAGE image
+                         */
+
                         sh """
                             docker tag \
                             ${env.qa_image} \
                             ${env.stage_image}
                         """
 
-                        // Push image to STAGE
+
+                        /*
+                         * Login using STAGE credentials
+                         * and push STAGE image
+                         */
+
                         docker.withRegistry(
-                            stage_registry_endpoint,
-                            stage_dh_creds
+                            env.registryURL,
+                            env.stage_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.stage_image}"
+                                env.stage_image
                             ).push()
                         }
                     }
@@ -223,6 +268,15 @@ def call(body) {
             }
 
 
+            /*
+             * ============================================================
+             * PROD
+             * Pull STAGE image
+             * Tag it as PROD
+             * Push PROD image
+             * ============================================================
+             */
+
             stage('Push the Docker Image in PROD') {
 
                 when {
@@ -232,12 +286,6 @@ def call(body) {
                 }
 
                 environment {
-
-                    stage_registry_endpoint =
-                        "${env.registryURL}${env.stage_registry}"
-
-                    prod_registry_endpoint =
-                        "${env.registryURL}${env.prod_registry}"
 
                     stage_image =
                         "${env.stage_registry}:${GIT_COMMIT}"
@@ -250,32 +298,45 @@ def call(body) {
 
                     script {
 
-                        // Pull image from STAGE
+                        /*
+                         * Login using STAGE credentials
+                         * and pull STAGE image
+                         */
+
                         docker.withRegistry(
-                            stage_registry_endpoint,
-                            stage_dh_creds
+                            env.registryURL,
+                            env.stage_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.stage_image}"
+                                env.stage_image
                             ).pull()
                         }
 
-                        // Tag STAGE image as PROD
+
+                        /*
+                         * Tag STAGE image as PROD image
+                         */
+
                         sh """
                             docker tag \
                             ${env.stage_image} \
                             ${env.prod_image}
                         """
 
-                        // Push image to PROD
+
+                        /*
+                         * Login using PROD credentials
+                         * and push PROD image
+                         */
+
                         docker.withRegistry(
-                            prod_registry_endpoint,
-                            prod_dh_creds
+                            env.registryURL,
+                            env.prod_dh_creds
                         ) {
 
                             docker.image(
-                                "${env.prod_image}"
+                                env.prod_image
                             ).push()
                         }
                     }

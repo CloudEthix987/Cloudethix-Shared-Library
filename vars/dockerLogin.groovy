@@ -2,7 +2,7 @@ def call() {
 
     withCredentials([
         usernamePassword(
-            credentialsId: 'dockerhub-credentials',
+            credentialsId: 'Docker-hub-id',
             usernameVariable: 'payalkharat',
             passwordVariable: 'dckr_pat_q8X6bU_es_n8AqC2ivAOXsaLAjw'
         )

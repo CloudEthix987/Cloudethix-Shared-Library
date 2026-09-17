@@ -11,16 +11,14 @@ def call(body) {
 
         environment {
 
-            // Docker Hub registry
+          
             registryURL = 'https://registry.hub.docker.com'
 
-            // Docker Hub repositories
            dev_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-dev' 
            qa_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-qa' 
            stage_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-stage' 
            prod_registry = 'registry.hub.docker.com/payalkharat/cloudethix-sample-nginx-prod'
 
-            // Jenkins credentials
             dev_dh_creds   = 'dh_cred_dev'
             qa_dh_creds    = 'dh_cred_qa'
             stage_dh_creds = 'dh_cred_stage'
@@ -37,13 +35,6 @@ def call(body) {
         }
 
         stages {
-
-            /*
-             * ============================================================
-             * DEV
-             * Build image and push it to DEV repository
-             * ============================================================
-             */
 
             stage('Building the Docker Image in Dev') {
 
@@ -89,16 +80,6 @@ def call(body) {
                 }
             }
 
-
-            /*
-             * ============================================================
-             * QA
-             * Pull DEV image
-             * Tag it as QA
-             * Push QA image
-             * ============================================================
-             */
-
             stage('Push the Docker Image in QA') {
 
                 when {
@@ -120,11 +101,6 @@ def call(body) {
 
                     script {
 
-                        /*
-                         * Login to Docker Hub using DEV credentials
-                         * and pull DEV image
-                         */
-
                         docker.withRegistry(
                             env.registryURL,
                             env.dev_dh_creds
@@ -135,26 +111,11 @@ def call(body) {
                             ).pull()
                         }
 
-
-                        /*
-                         * Tag DEV image as QA image
-                         *
-                         * IMPORTANT:
-                         * Both image names are exactly the same
-                         * format used during pull.
-                         */
-
                         sh """
                             docker tag \
                             ${env.dev_image} \
                             ${env.qa_image}
                         """
-
-
-                        /*
-                         * Login to Docker Hub using QA credentials
-                         * and push QA image
-                         */
 
                         docker.withRegistry(
                             env.registryURL,
@@ -180,16 +141,6 @@ def call(body) {
                 }
             }
 
-
-            /*
-             * ============================================================
-             * STAGE
-             * Pull QA image
-             * Tag it as STAGE
-             * Push STAGE image
-             * ============================================================
-             */
-
             stage('Push the Docker Image in STAGE') {
 
                 when {
@@ -211,11 +162,6 @@ def call(body) {
 
                     script {
 
-                        /*
-                         * Login using QA credentials
-                         * and pull QA image
-                         */
-
                         docker.withRegistry(
                             env.registryURL,
                             env.qa_dh_creds
@@ -226,23 +172,11 @@ def call(body) {
                             ).pull()
                         }
 
-
-                        /*
-                         * Tag QA image as STAGE image
-                         */
-
                         sh """
                             docker tag \
                             ${env.qa_image} \
                             ${env.stage_image}
                         """
-
-
-                        /*
-                         * Login using STAGE credentials
-                         * and push STAGE image
-                         */
-
                         docker.withRegistry(
                             env.registryURL,
                             env.stage_dh_creds
@@ -267,16 +201,6 @@ def call(body) {
                 }
             }
 
-
-            /*
-             * ============================================================
-             * PROD
-             * Pull STAGE image
-             * Tag it as PROD
-             * Push PROD image
-             * ============================================================
-             */
-
             stage('Push the Docker Image in PROD') {
 
                 when {
@@ -298,11 +222,6 @@ def call(body) {
 
                     script {
 
-                        /*
-                         * Login using STAGE credentials
-                         * and pull STAGE image
-                         */
-
                         docker.withRegistry(
                             env.registryURL,
                             env.stage_dh_creds
@@ -313,22 +232,11 @@ def call(body) {
                             ).pull()
                         }
 
-
-                        /*
-                         * Tag STAGE image as PROD image
-                         */
-
                         sh """
                             docker tag \
                             ${env.stage_image} \
                             ${env.prod_image}
                         """
-
-
-                        /*
-                         * Login using PROD credentials
-                         * and push PROD image
-                         */
 
                         docker.withRegistry(
                             env.registryURL,

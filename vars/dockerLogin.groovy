@@ -1,16 +1,15 @@
-def call() {
 
+
+def call() {
     withCredentials([
-        usernamePassword(
-            credentialsId: 'Docker-hub-id',
-            usernameVariable: 'payalkharat',
-            passwordVariable: 'dckr_pat_q8X6bU_es_n8AqC2ivAOXsaLAjw'
+        string(
+            credentialsId: 'dockerhub-credentials',
+            variable: 'dckr_pat_q8X6bU_es_n8AqC2ivAOXsaLAjw'
         )
     ]) {
-
         sh '''
-            echo "$DOCKER_PASSWORD" | docker login  \
-                -u "$DOCKER_USER" \
+            echo "$DOCKER_PASSWORD" | docker login docker.io \
+                -u "payalkharat" \
                 --password-stdin
         '''
     }

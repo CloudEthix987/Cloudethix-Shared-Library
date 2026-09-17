@@ -9,7 +9,7 @@ def call() {
     ]) {
 
         sh '''
-            echo "$DOCKER_PASSWORD" | podman login docker.io \
+            echo "$DOCKER_PASSWORD" | docker login docker.io \
                 -u "$DOCKER_USER" \
                 --password-stdin
         '''

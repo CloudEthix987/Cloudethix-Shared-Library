@@ -1,0 +1,25 @@
+```groovy
+pipeline {
+
+    agent any
+
+    stages {
+
+        stage('Check Updated Code') {
+            steps {
+                echo "Latest code from GitHub:"
+
+                sh 'cat index.html'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "Build started..."
+
+                sh 'echo "Build successful!"'
+            }
+        }
+    }
+}
+```
